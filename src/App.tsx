@@ -34,6 +34,7 @@ function App() {
   return (
     <main className="container">
       <span>v{version}</span>
+      <span>Update testing span</span>
       <button onClick={() => checkForAppUpdates(true)}>Check for updates</button>
       <h1>Welcome to Tauri + React</h1>
 
