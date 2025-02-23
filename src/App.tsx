@@ -1,11 +1,30 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import reactLogo from "./assets/react.svg";
 import { invoke } from "@tauri-apps/api/core";
 import "./App.css";
+import { getVersion } from '@tauri-apps/api/app'
+import { checkForAppUpdates } from './lib/updater'
 
 function App() {
   const [greetMsg, setGreetMsg] = useState("");
   const [name, setName] = useState("");
+  const [version, setVersion] = useState<string | null>(null);
+
+  useEffect(() => {
+    const tauriVersion = async () => {
+      try {
+        setVersion(await getVersion())
+      } catch (error) {
+        console.error(error)
+      }
+    }
+
+    tauriVersion()
+  }, [])
+
+  useEffect(() => {
+    checkForAppUpdates(false)
+  }, [])
 
   async function greet() {
     // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
@@ -14,6 +33,8 @@ function App() {
 
   return (
     <main className="container">
+      <span>v{version}</span>
+      <button onClick={() => checkForAppUpdates(true)}>Check for updates</button>
       <h1>Welcome to Tauri + React</h1>
 
       <div className="row">
