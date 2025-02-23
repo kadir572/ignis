@@ -23,7 +23,7 @@ function App() {
   }, [])
 
   useEffect(() => {
-    checkForAppUpdates(false)
+    checkForAppUpdates()
   }, [])
 
   async function greet() {
