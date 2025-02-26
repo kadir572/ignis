@@ -1,8 +1,5 @@
-import { invoke } from '@tauri-apps/api/core'
 import { ask, message } from '@tauri-apps/plugin-dialog'
-import { BaseDirectory } from '@tauri-apps/plugin-fs'
 import { check } from '@tauri-apps/plugin-updater'
-import { useState } from 'react'
 
 export const checkForAppUpdates = async (onUserClick = false) => {
   const update = await check()
