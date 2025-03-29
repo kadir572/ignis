@@ -31,16 +31,6 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "createUpdaterArtifacts": true
-  },
-  "plugins": {
-    "updater": {
-      "enabled": true,
-      "endpoints": ["https://github.com/kadir572/ignis/releases/latest/download/latest.json"],
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEM5RkJCRjRFRDQwMjlEClJXU2RBdFJPdi92SkFEbk5zeWozZ3VTMXdES0xMWm1TTko3a2NBSy9wTDBFam1JREhxZjhNUHUwCg==",
-      "windows": {
-        "installMode": "basicUi"
-      }
-    }
+    "resources": ["binaries/**/*"]
   }
 }
