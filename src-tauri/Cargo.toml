@@ -1,6 +1,6 @@
 [package]
 name = "ignis"
-version = "0.1.1"
+version = "0.1.1-beta.1"
 description = "A Tauri App"
 authors = ["you"]
 edition = "2021"
@@ -27,3 +27,13 @@ tauri-plugin-fs = "2"
 base64 = "0.22.1"
 pdfium-render = "0.8.29"
 image = "0.25.5"
+uuid = "1.16.0"
+lopdf = "0.36.0"
+rusttype = "0.9.3"
+printpdf = "0.8.2"
+genpdf = "0.2.0"
+md5 = "0.8.0"
+rand = "0.9.1"
+aes = "0.8.4"
+cbc = { version = "0.1.2", features = ["alloc"] }
+cipher = { version = "0.4.4", features = ["block-padding"] }

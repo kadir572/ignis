@@ -10,7 +10,17 @@ export type FilePathStore = {
   clearFilePaths: () => void;
 }
 
+export type DownloadAllStore = {
+  fileName: string
+  password?: string
+  isFormOpen: boolean
+  setFileName: (fileName: string) => void
+  setPassword: (password: string) => void
+  setIsFormOpen: (isFormOpen: boolean) => void
+}
+
 export type ThumbnailData = {
+  id: string,
   page_index: number
   file_path: string
   thumbnail: string
@@ -18,15 +28,28 @@ export type ThumbnailData = {
   height: number
 }
 
-export type PdfPreviewData = {
+export type DocumentData = {
+  id: string,
   file_name: string,
   file_path: string,
   thumbnails: ThumbnailData[]
+  error?: string
+  password?: string
+  decrypted?: boolean
 }
 
-export type PdfPreviewsState = {
-  pdfsPreviews: PdfPreviewData[]
-  setPdfPreviews: (pdfPreviews: PdfPreviewData[]) => void
-  addPdfPreview: (pdfPreview: PdfPreviewData) => void
-  clearPdfPreviews: () => void
+export type DocumentsState = {
+  documents: Record<string, DocumentData>
+  setDocuments: (docuemnts: Record<string, DocumentData>) => void
+  addDocument: (document: DocumentData) => void
+  removeDocument: (documentId: string) => void
+  removeThumbnail: (documentId: string, thumbnailId: string) => void
+  clearDocuments: () => void
+  updateFileName: (documentId: string, fileName: string) => void
+}
+
+export type FullImageData = {
+  data_url: string,
+  width: number,
+  height: number
 }

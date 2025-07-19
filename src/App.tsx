@@ -4,6 +4,7 @@ import HomePage from './components/pages/home/page'
 
 export default function App() {
   return (
+    <>
     <Router>
       <Routes>
         <Route path='/' element={<RootLayout />}>
@@ -11,5 +12,6 @@ export default function App() {
         </Route>
       </Routes>
     </Router>
+    </>
   )
 }

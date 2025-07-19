@@ -1,0 +1,47 @@
+{
+  "landing": {
+    "title": "Welcome to Ignis!",
+    "subtitle": "Upload your files to get started",
+    "upload_btn": "Upload Files"
+  },
+  "settings": {
+    "language": {
+      "select": "Select Language",
+      "search": "Search Language",
+      "empty": "No language found",
+      "placeholder": "Select Language"
+    }
+  },
+  "documents": {
+    "download_btn": "Download All",
+    "download_all_form": {
+      "title": "Download All Files as One PDF",
+      "description": "The files will be merged in the order shown in the UI.",
+      "p1": "Set the file name for the exported PDF. Optionally, set a password to encrypt the PDF.",
+      "p2": "In the future, you will be able to select the PDF version and encryption algorithm here.",
+      "p3": "Note: PDF features like links or interactive elements will not be preserved, as the file will be saved as a new PDF.",
+      "file_name": "File Name",
+      "password": "Password (optional)",
+      "confirm_password": "Confirm Password",
+      "cancel": "Cancel",
+      "download": "Download"
+    }
+  },
+  "document": {
+    "expand_btn": "Expand",
+    "collapse_btn": "Collapse",
+    "remove_btn": "Remove",
+    "download_btn": "Download PDF",
+    "drop_here": "Drop here",
+    "download_form": {
+      "title": "Download PDF with Password",
+      "p1": "You can protect this PDF file with a password. If you set a password, the downloaded PDF will require it to open.",
+      "p2": "In the future, you will be able to select the PDF version and encryption algorithm here.",
+      "p3": "Note: PDF features like links or interactive elements will not be preserved, as the file will be saved as a new PDF.",
+      "password": "Password",
+      "confirm_password": "Confirm Password",
+      "cancel": "Cancel",
+      "download": "Download"
+    }
+  }
+}
