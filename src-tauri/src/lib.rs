@@ -1,5 +1,4 @@
 pub mod upload;
-pub(crate) mod encryption;
 
 use upload::commands::{download_file, gen_full_res, generate_thumbnails};
 

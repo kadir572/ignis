@@ -9,10 +9,9 @@ import { useEffect, useState } from 'react'
 import { move } from '@dnd-kit/helpers'
 import UploadButton from './upload-button'
 import { documentRequiresDecryption } from '@/functions/document'
-import { Button } from '@/components/ui/button'
+
 import DownloadButton from './download-button'
 import DownloadAllForm from './download-all-form'
-import LanguageSwitcher from './LanguageSwitcher'
 
 export default function DocumentsList() {
   const { isFormOpen } = useDownloadAllStore()
@@ -133,7 +132,13 @@ export default function DocumentsList() {
         <div className='flex absolute right-0 top-0 z-30 w-min'>
           <div className='flex flex-col w-fit'>
             <div className='flex items-center gap-2'>
-              <DownloadButton />
+              <DownloadButton className="
+  bg-white text-slate-800 border-slate-300
+  dark:bg-[#334155] dark:text-white dark:border-slate-500
+  hover:bg-slate-100 hover:text-slate-900
+  dark:hover:bg-[#232e41] dark:hover:text-white
+  transition-all duration-300
+" />
               <UploadButton />
             </div>
             <div
@@ -162,18 +167,7 @@ export default function DocumentsList() {
           )
         })}
         </div>
-        <LanguageSwitcher placement="bottom-right" />
       </div>
-      <Button
-        onClick={() => {
-          console.log('items', items)
-          console.log('thumbnailsLookup', thumbnailsLookup)
-          console.log('documents', documents)
-          console.log('documents length', Object.keys(documents).length)
-        }}
-      >
-        Log items and thumbnailsLookup
-      </Button>
     </DragDropProvider>
   )
 }

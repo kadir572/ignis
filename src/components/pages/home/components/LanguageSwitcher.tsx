@@ -30,6 +30,16 @@ export default function LanguageSwitcher({ placement = 'bottom-right', className
       label: t('settings.language.german', { defaultValue: 'German' }),
       value: 'de',
       abbr: t('settings.language.abbr_de', { defaultValue: 'DE' })
+    },
+    {
+      label: t('settings.language.polish', { defaultValue: 'Polish' }),
+      value: 'pl',
+      abbr: t('settings.language.abbr_pl', { defaultValue: 'PL' })
+    },
+    {
+      label: t('settings.language.turkish', { defaultValue: 'Turkish' }),
+      value: 'tr',
+      abbr: t('settings.language.abbr_tr', { defaultValue: 'TR' })
     }
   ]
 
@@ -40,32 +50,30 @@ export default function LanguageSwitcher({ placement = 'bottom-right', className
 
   const currentLang = languages.find(l => l.value === value) || languages[0]
 
-  // For bottom-right placement, use fixed positioning
-  const wrapperClass = placement === 'bottom-right'
-    ? cn('fixed z-50 bottom-6 right-6', className)
-    : className
-
   return (
-    <div className={wrapperClass}>
+    <div>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             variant='outline'
             aria-label={t('settings.language.switcher', { defaultValue: 'Switch language' })}
             className={cn(
-              'flex items-center gap-2 px-3 py-2 rounded-full shadow-sm border border-slate-300 bg-white hover:bg-slate-100 transition-colors',
+              'flex items-center gap-2 px-3 py-2 rounded-full shadow-sm border w-fit h-10 transition-colors',
+              'bg-white text-slate-800 border-slate-300',
+              'dark:bg-[#334155] dark:text-white dark:border-slate-500',
+              'hover:bg-slate-100 hover:text-slate-900',
+              'dark:hover:bg-[#232e41] dark:hover:text-white',
               placement === 'bottom-right' ? 'text-base' : '',
-              'w-fit h-10',
               className
             )}
             style={{ minWidth: 0 }}
           >
-            <Globe className='w-5 h-5 text-black' />
-            <span className='font-semibold text-black'>{currentLang.abbr}</span>
+            <Globe className='w-5 h-5' style={{ color: 'currentColor' }} />
+            <span className='font-semibold' style={{ color: 'currentColor' }}>{currentLang.abbr}</span>
           </Button>
         </PopoverTrigger>
-        <PopoverContent className='w-44 p-0 rounded-lg shadow-lg border border-slate-200 bg-white'>
-          <Command className='bg-white'>
+        <PopoverContent className='w-44 p-0 rounded-lg shadow-lg border' style={{ background: 'var(--popover)', color: 'var(--popover-foreground)', borderColor: 'var(--border)' }}>
+          <Command className='bg-transparent'>
             <CommandInput
               placeholder={t('settings.language.search', { defaultValue: 'Search language...' })}
               className='h-9'

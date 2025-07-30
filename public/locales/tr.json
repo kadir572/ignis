@@ -1,0 +1,53 @@
+{
+  "landing": {
+    "title": "Ignis'e Hoş Geldiniz!",
+    "subtitle": "Başlamak için dosyalarınızı yükleyin",
+    "upload_btn": "Dosya Yükle"
+  },
+  "settings": {
+    "language": {
+      "select": "Dil Seç",
+      "search": "Dil Ara",
+      "empty": "Dil bulunamadı",
+      "placeholder": "Dil seç"
+    }
+  },
+  "documents": {
+    "download_btn": "Tümünü İndir",
+    "downloading_text": "İndiriliyor...",
+    "download_all_form": {
+      "title": "Tüm Dosyaları Tek PDF Olarak İndir",
+      "description": "Dosyalar, arayüzde gösterilen sırayla birleştirilecektir.",
+      "p1": "Dışa aktarılan PDF için dosya adını ayarlayın. İsteğe bağlı olarak PDF'yi şifrelemek için bir parola belirleyin.",
+      "p2": "Gelecekte burada PDF sürümünü ve şifreleme algoritmasını seçebileceksiniz.",
+      "p3": "Not: Bağlantılar veya etkileşimli öğeler gibi PDF özellikleri korunmayacaktır, çünkü dosya yeni bir PDF olarak kaydedilecektir.",
+      "file_name": "Dosya Adı",
+      "password": "Parola (isteğe bağlı)",
+      "confirm_password": "Parolayı Onayla",
+      "cancel": "İptal",
+      "download": "İndir",
+      "messages": {
+        "download_success": "İndirme başarılı. Dosya kaydedildi: {{filePath}}",
+        "download_error": "İndirme başarısız oldu. Lütfen tekrar deneyin."
+      }
+    }
+  },
+  "document": {
+    "expand_btn": "Genişlet",
+    "collapse_btn": "Daralt",
+    "remove_btn": "Kaldır",
+    "download_btn": "PDF İndir",
+    "downloading_text": "İndiriliyor...",
+    "drop_here": "Buraya bırakın",
+    "download_form": {
+      "title": "Parolalı PDF İndir",
+      "p1": "Bu PDF dosyasını bir parola ile koruyabilirsiniz. Bir parola ayarlarsanız, indirilen PDF'i açmak için bu parola gerekecektir.",
+      "p2": "Gelecekte burada PDF sürümünü ve şifreleme algoritmasını seçebileceksiniz.",
+      "p3": "Not: Bağlantılar veya etkileşimli öğeler gibi PDF özellikleri korunmayacaktır, çünkü dosya yeni bir PDF olarak kaydedilecektir.",
+      "password": "Parola",
+      "confirm_password": "Parolayı Onayla",
+      "cancel": "İptal",
+      "download": "İndir"
+    }
+  }
+} 

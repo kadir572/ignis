@@ -1,6 +1,9 @@
 export type IsProcessingStore = {
   isProcessing: boolean;
   setIsProcessing: (isProcessing: boolean) => void;
+  processedFiles: number;
+  incrementProcessedFiles: () => void;
+  decrementProcessedFiles: () => void;
 };
 
 export type FilePathStore = {
@@ -14,9 +17,11 @@ export type DownloadAllStore = {
   fileName: string
   password?: string
   isFormOpen: boolean
+  isDownloading: boolean
   setFileName: (fileName: string) => void
   setPassword: (password: string) => void
   setIsFormOpen: (isFormOpen: boolean) => void
+  setIsDownloading: (isDownloading: boolean) => void
 }
 
 export type ThumbnailData = {
@@ -52,4 +57,10 @@ export type FullImageData = {
   data_url: string,
   width: number,
   height: number
+}
+
+export type DownloadResponse = {
+  key: string,
+  file_name: string,
+  file_path: string
 }

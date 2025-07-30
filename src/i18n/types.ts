@@ -16,6 +16,7 @@ export type TranslationsType = {
   },
   documents: {
     download_btn: string,
+    downloading_text: string,
     download_all_form: {
       title: string,
       description: string,
@@ -26,7 +27,11 @@ export type TranslationsType = {
       password: string,
       confirm_password: string,
       cancel: string,
-      download: string
+      download: string,
+      messages: {
+        download_success: string
+        download_error: string
+      }
     }
   },
   document: {
@@ -34,6 +39,7 @@ export type TranslationsType = {
     collapse_btn: string,
     remove_btn: string,
     download_btn: string,
+    downloading_text: string,
     drop_here: string,
     download_form: {
       password: string,

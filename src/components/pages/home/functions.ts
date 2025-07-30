@@ -3,7 +3,7 @@ import { DocumentData } from '@/lib/types/file-upload.types'
 import { invoke } from '@tauri-apps/api/core'
 import { open } from '@tauri-apps/plugin-dialog'
 
-export async function handleFileUpload(isProcessing: boolean, addFilePath: (filePath: string) => void, addPdfPreview: (pdfPreview: DocumentData) => void): Promise<void> {
+export async function handleFileUpload(isProcessing: boolean, incrementProcessedFiles: () => void, decrementProcessedFiles: () => void, addFilePath: (filePath: string) => void, addPdfPreview: (pdfPreview: DocumentData) => void): Promise<void> {
   if (isProcessing) return;
 
   try {
@@ -20,13 +20,20 @@ export async function handleFileUpload(isProcessing: boolean, addFilePath: (file
 
     if (!fpArr || fpArr.length === 0) return;
 
-    fpArr.forEach(fp => addFilePath(fp));
+    console.log("fpArr", fpArr)
+
+    fpArr.forEach(fp => {
+      addFilePath(fp)
+      incrementProcessedFiles()
+    });
 
     fpArr.forEach(async fp => {
       try {
         await generateThumbnails(fp, addPdfPreview)
       } catch (e) {
         console.error(e);
+      } finally {
+        decrementProcessedFiles()
       }
     })
   } catch (e) {

@@ -12,20 +12,20 @@ const defaultClassName =
 
 export default function UploadButton({ className = '' }: { className?: string }) {
   const {t} = useTranslation()
-  const { isProcessing } = useIsProcessingStore()
+  const { isProcessing, incrementProcessedFiles, decrementProcessedFiles } = useIsProcessingStore()
   const { addFilePath } = useFilePathStore()
   const { addDocument: addPdfPreview } = usePdfPreviewsStore()
   return (
     <div className={cn(defaultClassName, className)}>
       <span
-        onClick={() => handleFileUpload(isProcessing, addFilePath, addPdfPreview)}
+        onClick={() => handleFileUpload(isProcessing, incrementProcessedFiles, decrementProcessedFiles, addFilePath, addPdfPreview)}
         className={`pl-4 pr-3 py-2 ${isProcessing ? 'cursor-default' : 'cursor-pointer'}`}
       >
         <FileUploadIcon />
       </span>
       <Separator orientation='vertical' />
       <span
-        onClick={() => handleFileUpload(isProcessing, addFilePath, addPdfPreview)}
+        onClick={() => handleFileUpload(isProcessing, incrementProcessedFiles, decrementProcessedFiles, addFilePath, addPdfPreview)}
         className={`pl-3 pr-4 py-2 ${isProcessing ? 'cursor-default' : 'cursor-pointer'} text-ellipsis text-nowrap overflow-x-hidden grow font-medium`}
         style={{ color: 'inherit' }}
       >

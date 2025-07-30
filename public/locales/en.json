@@ -13,7 +13,8 @@
     }
   },
   "documents": {
-    "download_btn": "Download All",
+    "download_btn": "Download All", 
+    "downloading_text": "Downloading...",
     "download_all_form": {
       "title": "Download All Files as One PDF",
       "description": "The files will be merged in the order shown in the UI.",
@@ -24,7 +25,11 @@
       "password": "Password (optional)",
       "confirm_password": "Confirm Password",
       "cancel": "Cancel",
-      "download": "Download"
+      "download": "Download",
+      "messages": {
+        "download_success": "Download successful. File saved at: {{filePath}}",
+        "download_error": "Download failed. Please try again."
+      }
     }
   },
   "document": {
@@ -32,6 +37,7 @@
     "collapse_btn": "Collapse",
     "remove_btn": "Remove",
     "download_btn": "Download PDF",
+    "downloading_text": "Downloading...",
     "drop_here": "Drop here",
     "download_form": {
       "title": "Download PDF with Password",

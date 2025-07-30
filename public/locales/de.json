@@ -14,6 +14,7 @@
   },
   "documents": {
     "download_btn": "Alle herunterladen",
+    "downloading_text": "Lädt herunter...",
     "download_all_form": {
       "title": "Alle Dateien als ein PDF herunterladen",
       "description": "Die Dateien werden in der Reihenfolge angezeigt, wie sie in der UI angezeigt werden.",
@@ -24,7 +25,11 @@
       "password": "Passwort (optional)",
       "confirm_password": "Passwort bestätigen",
       "cancel": "Abbrechen",
-      "download": "Herunterladen"
+      "download": "Herunterladen",
+      "messages": {
+        "download_success": "Download erfolgreich. Datei gespeichert unter: {{filePath}}",
+        "download_error": "Download fehlgeschlagen. Bitte versuche es erneut."
+      }
     }
   },
   "document": {
@@ -32,6 +37,7 @@
     "collapse_btn": "Einklappen",
     "remove_btn": "Entfernen",
     "download_btn": "PDF herunterladen",
+    "downloading_text": "Lädt herunter...",
     "drop_here": "Hier ablegen",
     "download_form": {
       "title": "PDF mit Passwort herunterladen",

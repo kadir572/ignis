@@ -1,4 +1,4 @@
-import { useState, useRef, useLayoutEffect } from 'react'
+import { useState, useRef, useLayoutEffect, useEffect } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { useDownloadAllStore } from '@/lib/stores/file-upload.store'
@@ -6,6 +6,7 @@ import { Eye, EyeOff, BanIcon, DownloadIcon } from 'lucide-react'
 import { DocumentData, ThumbnailData } from '@/lib/types/file-upload.types'
 import { handleDownloadAllDocuments } from '@/functions/document'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 
 type Props = {
   items: Record<string, string[]>
@@ -19,8 +20,9 @@ export default function DownloadAllForm({ items, thumbnailsLookup, documents }: 
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const { setIsFormOpen, isFormOpen } = useDownloadAllStore()
+  const { setIsFormOpen, isFormOpen, setIsDownloading, isDownloading } = useDownloadAllStore()
   const inputRef = useRef<HTMLInputElement>(null)
+  const formRef = useRef<HTMLDivElement>(null)
   const { t } = useTranslation()
 
   useLayoutEffect(() => {
@@ -29,21 +31,63 @@ export default function DownloadAllForm({ items, thumbnailsLookup, documents }: 
     }
   }, [isFormOpen])
 
-  const isDownloadEnabled = password.length > 0 && password === confirmPassword;
-  // const showPasswordMismatch = password.length > 0 && confirmPassword.length > 0 && password !== confirmPassword;
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        formRef.current &&
+        !formRef.current.contains(event.target as Node)
+      ) {
+        setIsFormOpen(false)
+      }
+    }
+
+    if (isFormOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isFormOpen, setIsFormOpen])
+
+
+  const isPasswordMatching = password.length > 0 && password === confirmPassword;
+  const isDownloadEnabled = fileName.length > 0 && (password.length <= 0 || isPasswordMatching);
+
+  const handleReset = () => {
+    setFileName('')
+    setPassword('')
+    setConfirmPassword('')
+    setIsFormOpen(false)
+  }
+
+  const handleDownload = async () => {
+    if (isDownloadEnabled) {
+     try {
+      setIsDownloading(true)
+      let res = await handleDownloadAllDocuments(fileName, items, thumbnailsLookup, documents, password)
+      toast.success(t('documents.download_all_form.messages.download_success', { filePath: res.file_path }))
+      handleReset()
+     } catch (error) {
+      toast.error(t('documents.download_all_form.messages.download_error'))
+     } finally {
+      setIsDownloading(false)
+     }
+    }
+  }
 
   return (
     <div
-      className='flex flex-col gap-3 bg-white rounded-b-md border border-t-0 border-slate-200 px-4 py-3 pt-8 w-full'
+      ref={formRef}
+      className='flex flex-col gap-3 bg-white rounded-b-md border border-t-0 border-slate-200 px-4 py-3 pt-8 w-full dark:bg-[#1e293b] dark:border-slate-700'
     >
       <div className='mb-1'>
-        <h2 className='text-base font-semibold text-slate-800'>{t('documents.download_all_form.title')}</h2>
-        <div className='text-xs text-slate-500'>{t('documents.download_all_form.description')}</div>
+        <h2 className='text-base font-semibold text-slate-800 dark:text-white'>{t('documents.download_all_form.title')}</h2>
+        <div className='text-xs text-slate-500 dark:text-slate-400'>{t('documents.download_all_form.description')}</div>
       </div>
-      <div className='mb-2 text-sm text-slate-700 w-full max-w-xs flex flex-col gap-1'>
+      <div className='mb-2 text-sm text-slate-700 w-full max-w-xs flex flex-col gap-1 dark:text-slate-300'>
         <span>{t('documents.download_all_form.p1')}</span>
-        <span className='text-slate-500'>{t('documents.download_all_form.p2')}</span>
-        <span className='text-orange-600'>{t('documents.download_all_form.p3')}</span>
+        <span className='text-slate-500 dark:text-slate-400'>{t('documents.download_all_form.p2')}</span>
+        <span className='text-orange-600 dark:text-red-400'>{t('documents.download_all_form.p3')}</span>
       </div>
       <div className='flex items-center w-full'>
         <Input
@@ -52,9 +96,9 @@ export default function DownloadAllForm({ items, thumbnailsLookup, documents }: 
           placeholder={t('documents.download_all_form.file_name')}
           value={fileName}
           onChange={e => setFileName(e.target.value)}
-          className='mr-2 grow'
+          className='mr-2 grow focus-visible:ring-0'
         />
-        <span className='text-slate-700 ml-1 select-none w-fit text-sm'>.pdf</span>
+        <span className='text-slate-700 ml-1 select-none w-fit text-sm dark:text-slate-300'>.pdf</span>
       </div>
       <div className="relative w-full">
         <Input
@@ -62,7 +106,7 @@ export default function DownloadAllForm({ items, thumbnailsLookup, documents }: 
           placeholder={t('documents.download_all_form.password')}
           value={password}
           onChange={e => setPassword(e.target.value)}
-          className='pr-10'
+          className='pr-10 focus-visible:ring-0'
         />
         <button
           type="button"
@@ -80,7 +124,7 @@ export default function DownloadAllForm({ items, thumbnailsLookup, documents }: 
           value={confirmPassword}
           disabled={password.length <= 0}
           onChange={e => setConfirmPassword(e.target.value)}
-          className='pr-10'
+          className='pr-10 focus-visible:ring-0'
         />
         <button
           type="button"
@@ -96,13 +140,8 @@ export default function DownloadAllForm({ items, thumbnailsLookup, documents }: 
         <Button
           className='bg-white hover:bg-slate-100 transition-all duration-300 cursor-pointer'
           type='button'
-          variant='outline'
-          onClick={() => {
-            setFileName('')
-            setPassword('')
-            setConfirmPassword('')
-            setIsFormOpen(false)
-          }}
+          variant='destructive'
+          onClick={handleReset}
         >
           <BanIcon/>
           <span>{t('documents.download_all_form.cancel')}</span>
@@ -110,15 +149,11 @@ export default function DownloadAllForm({ items, thumbnailsLookup, documents }: 
         <Button
           variant='default'
           className='bg-slate-700 hover:bg-slate-800 transition-all duration-300 cursor-pointer'
-          disabled={!isDownloadEnabled}
-          onClick={() => {
-            if (isDownloadEnabled) {
-              handleDownloadAllDocuments(fileName, items, thumbnailsLookup, documents)
-            }
-          }}
+          disabled={!isDownloadEnabled || isDownloading}
+          onClick={handleDownload}
         >
           <DownloadIcon/>
-          <span>{t('documents.download_all_form.download')}</span>
+          <span>{isDownloading ? t('documents.downloading_text') : t('documents.download_all_form.download')}</span>
         </Button>
       </div>
     </div>

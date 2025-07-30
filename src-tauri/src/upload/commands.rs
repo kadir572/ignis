@@ -7,6 +7,7 @@ use uuid::Uuid;
 
 use crate::upload::enums::ImageQuality;
 use crate::upload::functions::{file_name_from_path, gen_data_url_from_buffer};
+use crate::upload::structs::{CommandErrRes, DownloadSuccessRes};
 use crate::upload::{
     functions::{
         clone_with_dependencies, convert_image_to_pdf, convert_text_to_pdf, gen_image_bitmap,
@@ -16,6 +17,7 @@ use crate::upload::{
 };
 use lopdf::encryption::{Permissions};
 use std::convert::TryFrom;
+use std::sync::Arc;
 
 #[tauri::command]
 pub async fn download_file(
@@ -23,26 +25,40 @@ pub async fn download_file(
     file_name: &str,
     thumbnails: Vec<ThumbnailDownloadData>,
     password: Option<String>,
-) -> Result<String, String> {
+) -> Result<DownloadSuccessRes, CommandErrRes> {
 
-    let output_path = get_output_path(&app, file_name)?;
+    let output_path = get_output_path(&app, file_name).map_err(|e| CommandErrRes {
+        key: "PDF_OUTPUT_PATH_ERROR".to_string(),
+        file_name: file_name.to_string(),
+        file_path: None,
+        page_index: None,
+    })?;
 
     // Original PDF handling code
+    // Use PDF 1.5 for AES-128 encryption compatibility
     let mut new_doc = Document::with_version("1.5");
     let mut new_pages = Vec::new();
     let mut global_id_map: BTreeMap<String, BTreeMap<ObjectId, ObjectId>> = BTreeMap::new();
 
     for thumb in &thumbnails {
-        println!("thumb: {:?}", thumb);
-        // Load the PDF (encrypted or not)
         let mut doc = lopdf::Document::load(&thumb.file_path)
-            .map_err(|e| format!("Failed to load PDF: {}", e))?;
+            .map_err(|e| CommandErrRes {
+                key: "PDF_PAGE_LOAD_ERROR".to_string(),
+                file_name: file_name.to_string(),
+                file_path: Some(thumb.file_path.clone()),
+                page_index: Some(thumb.page_index),
+            })?;
 
         // Decrypt if password is provided
         if let Some(ref password) = thumb.password {
             if doc.is_encrypted() {
                 doc.decrypt(password)
-                    .map_err(|e| format!("Failed to decrypt PDF: {}", e))?;
+                    .map_err(|_| CommandErrRes {
+                        key: "PDF_PAGE_DECRYPT_ERROR".to_string(),
+                        file_name: file_name.to_string(),
+                        file_path: Some(thumb.file_path.clone()),
+                        page_index: Some(thumb.page_index),
+                    })?;
                 doc.trailer.remove(b"Encrypt");
             }
         }
@@ -52,10 +68,12 @@ pub async fn download_file(
         let page_id = match pages.get(&((thumb.page_index + 1) as u32)) {
             Some(id) => *id,
             None => {
-                return Err(format!(
-                    "Page {} not found in {}",
-                    thumb.page_index, thumb.file_path
-                ))
+                return Err(CommandErrRes {
+                    key: "PDF_PAGE_NOT_FOUND".to_string(),
+                    file_name: file_name.to_string(),
+                    file_path: Some(thumb.file_path.clone()),
+                    page_index: Some(thumb.page_index),
+                })
             }
         };
 
@@ -70,7 +88,6 @@ pub async fn download_file(
     let kids: Vec<Object> = new_pages.iter().map(|&id| id.into()).collect();
     let mut pages_dict = Dictionary::new();
     pages_dict.set("Type", Object::Name(b"Pages".to_vec()));
-
     pages_dict.set("Kids", Object::Array(kids));
     pages_dict.set("Count", Object::Integer(new_pages.len() as i64));
     new_doc
@@ -98,39 +115,64 @@ pub async fn download_file(
         new_doc.trailer.set("ID", id_obj);
     }
 
+    // Only encrypt if there are pages (avoid encrypting an empty doc)
     if let Some(password) = password {
-        // Set owner and user password to the same value for simplicity
-        let owner_password = &password;
-        let user_password = &password;
-        let permissions = Permissions::default();
+        if !new_pages.is_empty() {
+            let owner_password = &password;
+            let user_password = &password;
+            let permissions = Permissions::default();
 
-        // Build the encryption version
-        let version = EncryptionVersion::V1 {
-            document: &new_doc,
-            owner_password,
-            user_password,
-            permissions,
-        };
+            // Set up crypt filters for AES-128
+            let mut crypt_filters: BTreeMap<Vec<u8>, Arc<dyn lopdf::encryption::crypt_filters::CryptFilter>> = BTreeMap::new();
+            crypt_filters.insert(b"Default".to_vec(), Arc::new(lopdf::encryption::crypt_filters::Aes128CryptFilter));
 
-        // Convert to EncryptionState
-        let state = EncryptionState::try_from(version)
-            .map_err(|e| format!("Failed to build encryption state: {}", e))?;
+            let stream_filter = b"Default".to_vec();
+            let string_filter = b"Default".to_vec();
 
-        // Encrypt the document
-        new_doc.encrypt(&state)
-            .map_err(|e| format!("Failed to encrypt PDF: {}", e))?;
+            let version = EncryptionVersion::V4 {
+                document: &new_doc,
+                encrypt_metadata: true,
+                crypt_filters,
+                stream_filter,
+                string_filter,
+                owner_password,
+                user_password,
+                permissions,
+            };
+
+            let state = EncryptionState::try_from(version)
+                .map_err(|_| CommandErrRes {
+                    key: "PDF_ENCRYPT_ERROR".to_string(),
+                    file_name: file_name.to_string(),
+                    file_path: Some(output_path.to_string_lossy().to_string()),
+                    page_index: None,
+                })?;
+
+            new_doc.encrypt(&state)
+                .map_err(|_| CommandErrRes {
+                    key: "PDF_ENCRYPT_ERROR".to_string(),
+                    file_name: file_name.to_string(),
+                    file_path: Some(output_path.to_string_lossy().to_string()),
+                    page_index: None,
+                })?;
+        }
     }
-
 
     // Save the new PDF
     new_doc
         .save(&output_path)
-        .map_err(|e| format!("Failed to save PDF: {}", e))?;
+        .map_err(|_| CommandErrRes {
+            key: "PDF_SAVE_ERROR".to_string(),
+            file_name: file_name.to_string(),
+            file_path: Some(output_path.to_string_lossy().to_string()),
+            page_index: None,
+        })?;
 
-    Ok(format!(
-        "PDF created successfully at {}",
-        output_path.to_string_lossy()
-    ))
+    Ok(DownloadSuccessRes {
+        key: "PDF_DOWNLOAD_SUCCESS".to_string(),
+        file_name: file_name.to_string(),
+        file_path: output_path.to_string_lossy().to_string(),
+    })
 }
 
 #[tauri::command]
@@ -170,13 +212,13 @@ pub async fn generate_thumbnails(
         if !temp_pdf_path.exists() {
             // If no temporary PDF exists, convert the text file
             let text =
-                fs::read_to_string(file_path).map_err(|e| format!("Failed to read txt: {}", e))?;
+                fs::read_to_string(file_path).map_err(|_| format!("PDF_LOAD_ERROR"))?;
             convert_text_to_pdf(&app, &text, &temp_pdf_path)?;
         }
 
         let document = pdfium
             .load_pdf_from_file(temp_pdf_path.to_str().unwrap(), None)
-            .map_err(|e| format!("Failed to load document: {}", e))?;
+            .map_err(|_| format!("PDF_LOAD_ERROR"))?;
 
         // For each page
         for (page_index, page) in document.pages().iter().enumerate() {
@@ -220,7 +262,7 @@ pub async fn generate_thumbnails(
 
         let document = pdfium
             .load_pdf_from_file(temp_pdf_path.to_str().unwrap(), None)
-            .map_err(|e| format!("Failed to load document: {}", e))?;
+            .map_err(|_| format!("PDF_LOAD_ERROR"))?;
 
         // For each page (should be just one)
         for (page_index, page) in document.pages().iter().enumerate() {
@@ -274,7 +316,7 @@ pub async fn generate_thumbnails(
                             error: Some("PDF_PASSWORD_INCORRECT".to_string()),
                         })
                     } else {
-                        return Err(format!("Internal error: failed to load document: {}", e));
+                        return Err(format!("PDF_LOAD_ERROR"));
                     }
                 }
             },
@@ -291,7 +333,7 @@ pub async fn generate_thumbnails(
                             error: Some("PDF_PASSWORD_REQUIRED".to_string()),
                         })
                     } else {
-                        return Err(format!("Internal error: failed to load document: {}", e));
+                        return Err(format!("PDF_LOAD_ERROR"));
                     }
                 }
             },
@@ -324,7 +366,7 @@ pub async fn generate_thumbnails(
             let img = bitmap.as_image();
 
             img.write_to(&mut Cursor::new(&mut buffer), image::ImageFormat::Png)
-                .map_err(|e| format!("Failed to encode image: {}", e))?;
+                .map_err(|_| format!("PDF_LOAD_ERROR"))?;
 
             let data_url = gen_data_url_from_buffer(&buffer);
 
@@ -351,78 +393,6 @@ pub async fn generate_thumbnails(
     }
 }
 
-// #[tauri::command]
-// pub async fn download_all_files(
-//     app: AppHandle,
-//     file_name: String,
-//     files: Vec<Vec<ThumbnailData>>,
-// ) -> Result<String, String> {
-//     // Flatten all thumbnails in the order provided
-//     let thumbnails: Vec<ThumbnailData> = files.into_iter().flatten().collect();
-//     if thumbnails.is_empty() {
-//         return Err("No thumbnails provided".to_string());
-//     }
-//     // Use the provided file_name and ensure uniqueness
-//     let output_path = get_output_path(&app, &file_name)?;
-
-//     let mut new_doc = Document::with_version("1.5");
-//     let mut new_pages = Vec::new();
-//     let mut global_id_map: BTreeMap<String, BTreeMap<ObjectId, ObjectId>> = BTreeMap::new();
-
-//     for thumb in &thumbnails {
-//         // Load the PDF (encrypted or not)
-//         let doc = lopdf::Document::load(&thumb.file_path)
-//             .map_err(|e| format!("Failed to load PDF: {}", e))?;
-
-//         // No decryption logic needed for ThumbnailData (no password)
-
-//         // Get the page object ID for the given page_index (lopdf is 1-based)
-//         let pages = doc.get_pages();
-//         let page_id = match pages.get(&((thumb.page_index + 1) as u32)) {
-//             Some(id) => *id,
-//             None => {
-//                 return Err(format!(
-//                     "Page {} not found in {}",
-//                     thumb.page_index, thumb.file_path
-//                 ))
-//             }
-//         };
-
-//         // Merge the page into the new document
-//         let id_map = global_id_map.entry(thumb.file_path.clone()).or_default();
-//         let new_id = clone_with_dependencies(&doc, page_id, &mut new_doc, id_map);
-//         new_pages.push(new_id);
-//     }
-
-//     // Build the Pages tree
-//     let pages_id = new_doc.new_object_id();
-//     let kids: Vec<Object> = new_pages.iter().map(|&id| id.into()).collect();
-//     let mut pages_dict = Dictionary::new();
-//     pages_dict.set("Type", Object::Name(b"Pages".to_vec()));
-//     pages_dict.set("Kids", Object::Array(kids));
-//     pages_dict.set("Count", Object::Integer(new_pages.len() as i64));
-//     new_doc
-//         .objects
-//         .insert(pages_id, Object::Dictionary(pages_dict));
-
-//     // Set the root catalog
-//     let catalog_id = new_doc.new_object_id();
-//     let mut catalog_dict = Dictionary::new();
-//     catalog_dict.set("Type", Object::Name(b"Catalog".to_vec()));
-//     catalog_dict.set("Pages", Object::Reference(pages_id));
-//     new_doc
-//         .objects
-//         .insert(catalog_id, Object::Dictionary(catalog_dict));
-//     new_doc.trailer.set("Root", catalog_id);
-
-//     // Save the new PDF (ensure unique file name)
-//     new_doc
-//         .save(&output_path)
-//         .map_err(|e| format!("Failed to save PDF: {}", e))?;
-
-//     Ok(output_path.to_string_lossy().to_string())
-// }
-
 #[tauri::command]
 pub async fn gen_full_res(
     app: AppHandle,
@@ -439,18 +409,18 @@ pub async fn gen_full_res(
         if !temp_pdf_path.exists() {
             // If no temporary PDF exists, convert the text file
             let text =
-                fs::read_to_string(file_path).map_err(|e| format!("Failed to read txt: {}", e))?;
+                fs::read_to_string(file_path).map_err(|_| format!("PDF_LOAD_ERROR"))?;
             convert_text_to_pdf(&app, &text, &temp_pdf_path)?;
         }
         
         let document = pdfium
             .load_pdf_from_file(temp_pdf_path.to_str().unwrap(), None)
-            .map_err(|e| format!("Failed to load document: {}", e))?;
+            .map_err(|_| format!("PDF_LOAD_ERROR"))?;
 
         let page = document
             .pages()
             .get(page_index as u16)
-            .map_err(|e| format!("Page index {} out of bounds: {}", page_index, e))?;
+            .map_err(|_| format!("PDF_PAGE_NOT_FOUND"))?;
 
         let bitmap = gen_image_bitmap(&page, page.width().value, page.height().value, ImageQuality::High)?;
         let data_url = gen_image_data_url(&bitmap)?;
@@ -466,7 +436,7 @@ pub async fn gen_full_res(
 
         image
             .write_to(&mut Cursor::new(&mut buffer), image::ImageFormat::WebP)
-            .map_err(|e| format!("Failed to encode WebP: {}", e))?;
+            .map_err(|_| format!("PDF_LOAD_ERROR"))?;
 
         Ok(FullImageData {
             data_url: gen_data_url_from_buffer(&buffer),
@@ -476,12 +446,12 @@ pub async fn gen_full_res(
     } else {
         let document = pdfium
             .load_pdf_from_file(file_path, password.as_deref())
-            .map_err(|e| format!("Failed to load document: {}", e))?;
+            .map_err(|_| format!("PDF_LOAD_ERROR"))?;
 
         let page = document
             .pages()
             .get(page_index as u16)
-            .map_err(|e| format!("Page index {} out of bounds: {}", page_index, e))?;
+            .map_err(|_| format!("PDF_PAGE_NOT_FOUND"))?;
 
         let bitmap = gen_image_bitmap(&page, page.width().value, page.height().value, ImageQuality::High)?;
         let data_url = gen_image_data_url(&bitmap)?;

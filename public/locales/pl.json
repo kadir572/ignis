@@ -1,0 +1,53 @@
+{
+  "landing": {
+    "title": "Witamy w Ignis!",
+    "subtitle": "Prześlij swoje pliki, aby rozpocząć",
+    "upload_btn": "Prześlij pliki"
+  },
+  "settings": {
+    "language": {
+      "select": "Wybierz język",
+      "search": "Szukaj języka",
+      "empty": "Nie znaleziono języka",
+      "placeholder": "Wybierz język"
+    }
+  },
+  "documents": {
+    "download_btn": "Pobierz wszystko",
+    "downloading_text": "Pobieranie...",
+    "download_all_form": {
+      "title": "Pobierz wszystkie pliki jako jeden PDF",
+      "description": "Pliki zostaną połączone w kolejności wyświetlanej w interfejsie.",
+      "p1": "Ustaw nazwę pliku dla wyeksportowanego PDF. Opcjonalnie ustaw hasło, aby zaszyfrować PDF.",
+      "p2": "W przyszłości będziesz mógł wybrać tutaj wersję PDF i algorytm szyfrowania.",
+      "p3": "Uwaga: Funkcje PDF, takie jak linki lub elementy interaktywne, nie zostaną zachowane, ponieważ plik zostanie zapisany jako nowy PDF.",
+      "file_name": "Nazwa pliku",
+      "password": "Hasło (opcjonalnie)",
+      "confirm_password": "Potwierdź hasło",
+      "cancel": "Anuluj",
+      "download": "Pobierz",
+      "messages": {
+        "download_success": "Pobieranie zakończone sukcesem. Plik zapisano w: {{filePath}}",
+        "download_error": "Pobieranie nie powiodło się. Spróbuj ponownie."
+      }
+    }
+  },
+  "document": {
+    "expand_btn": "Rozwiń",
+    "collapse_btn": "Zwiń",
+    "remove_btn": "Usuń",
+    "download_btn": "Pobierz PDF",
+    "downloading_text": "Pobieranie...",
+    "drop_here": "Upuść tutaj",
+    "download_form": {
+      "title": "Pobierz PDF z hasłem",
+      "p1": "Możesz zabezpieczyć ten plik PDF hasłem. Jeśli ustawisz hasło, pobrany PDF będzie go wymagał do otwarcia.",
+      "p2": "W przyszłości będziesz mógł wybrać tutaj wersję PDF i algorytm szyfrowania.",
+      "p3": "Uwaga: Funkcje PDF, takie jak linki lub elementy interaktywne, nie zostaną zachowane, ponieważ plik zostanie zapisany jako nowy PDF.",
+      "password": "Hasło",
+      "confirm_password": "Potwierdź hasło",
+      "cancel": "Anuluj",
+      "download": "Pobierz"
+    }
+  }
+} 

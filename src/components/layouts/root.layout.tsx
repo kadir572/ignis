@@ -15,9 +15,9 @@ useEffect(() => {
   toggleDarkMode(theme)
 }, [toggleDarkMode])
   return (
-    <div className='flex flex-col w-full'>
+    <div className='flex flex-col w-full min-h-screen'>
       <Header />
-      <div className='grow px-4'>
+      <div className='grow px-4 flex flex-col justify-start'>
         <Outlet />
       </div>
     </div>

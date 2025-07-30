@@ -30,3 +30,18 @@ pub struct FullImageData {
     pub width: u32,
     pub height: u32,
 }
+
+#[derive(serde::Serialize)]
+pub struct DownloadSuccessRes {
+    pub key: String,
+    pub file_name: String,
+    pub file_path: String
+}
+
+#[derive(serde::Serialize)]
+pub struct CommandErrRes {
+    pub key: String,
+    pub file_name: String,
+    pub file_path: Option<String>,
+    pub page_index: Option<usize>
+}

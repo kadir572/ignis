@@ -4,6 +4,9 @@ import { FilePathStore, IsProcessingStore, DocumentsState, DownloadAllStore } fr
 export const useIsProcessingStore = create<IsProcessingStore>(set => ({
   isProcessing: false,
   setIsProcessing: (isProcessing: boolean) => set({ isProcessing }),
+  processedFiles: 0,
+  incrementProcessedFiles: () => set(state => ({ processedFiles: state.processedFiles + 1 })),
+  decrementProcessedFiles: () => set(state => ({ processedFiles: state.processedFiles - 1 })),
 }))
 
 export const useFilePathStore = create<FilePathStore>(set => ({
@@ -17,9 +20,11 @@ export const useDownloadAllStore = create<DownloadAllStore>(set => ({
   fileName: '',
   password: '',
   isFormOpen: false,
+  isDownloading: false,
   setFileName: (fileName: string) => set({ fileName }),
   setPassword: (password: string) => set({ password }),
   setIsFormOpen: (isFormOpen: boolean) => set({ isFormOpen }),
+  setIsDownloading: (isDownloading: boolean) => set({ isDownloading }),
 }))
 
 export const usePdfPreviewsStore = create<DocumentsState>(set => ({

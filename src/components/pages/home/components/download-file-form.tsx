@@ -1,13 +1,14 @@
-import { useState, useRef, useLayoutEffect, useEffect } from 'react'
+import { useState, useEffect, useRef, useLayoutEffect } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { BanIcon, DownloadIcon, Eye, EyeOff } from 'lucide-react'
 import { DocumentData, ThumbnailData } from '@/lib/types/file-upload.types'
 import { handleDownloadDocument } from '@/functions/document'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 
 type Props = {
-  document: DocumentData
+  doc: DocumentData
   pagesInDocument: string[]
   thumbnailsLookup: Record<string, ThumbnailData>
   documents: Record<string, DocumentData>
@@ -15,7 +16,7 @@ type Props = {
   setIsDownloadFormOpen: (isDownloadFormOpen: boolean) => void
 }
 
-export default function DownloadFileForm({ document, pagesInDocument, thumbnailsLookup, documents, isDownloadFormOpen, setIsDownloadFormOpen }: Props) {
+export default function DownloadFileForm({ doc, pagesInDocument, thumbnailsLookup, documents, isDownloadFormOpen, setIsDownloadFormOpen }: Props) {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -23,6 +24,7 @@ export default function DownloadFileForm({ document, pagesInDocument, thumbnails
   const { t } = useTranslation()
   
   const inputRef = useRef<HTMLInputElement>(null)
+  const formRef = useRef<HTMLDivElement>(null)
 
   useLayoutEffect(() => {
     if (isDownloadFormOpen && inputRef.current) {
@@ -30,24 +32,56 @@ export default function DownloadFileForm({ document, pagesInDocument, thumbnails
     }
   }, [isDownloadFormOpen])
 
-  const isDownloadEnabled = password.length > 0 && password === confirmPassword;
-  // const showPasswordMismatch = password.length > 0 && confirmPassword.length > 0 && password !== confirmPassword;
-
   useEffect(() => {
-    console.log('isDownloadFormOpen', isDownloadFormOpen)
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        formRef.current &&
+        !formRef.current.contains(event.target as Node)
+      ) {
+        handleReset() // or setIsDownloadFormOpen(false)
+      }
+    }
+
+    if (isDownloadFormOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
   }, [isDownloadFormOpen])
+
+  const isDownloadEnabled = password.length > 0 && password === confirmPassword;
+  
+  const handleReset = () => {
+    setPassword('')
+    setConfirmPassword('')
+    setIsDownloadFormOpen(false)
+  }
+
+  const handleDownload = async () => {
+    if (isDownloadEnabled) {
+      try {
+        let res = await handleDownloadDocument(doc, pagesInDocument, thumbnailsLookup, documents, password)
+        toast.success(t('documents.download_all_form.messages.download_success', { filePath: res.file_path }))
+        handleReset()
+      } catch (error) {
+        toast.error(t('documents.download_all_form.messages.download_error'))
+      }
+    }
+  }
 
   return (
     <div
-      className='flex flex-col gap-3 bg-white rounded-b-md border border-t-0 border-slate-200 px-4 py-3 pt-8 w-full'
+      ref={formRef}
+      className='flex flex-col gap-3 bg-white rounded-b-md border border-t-0 border-slate-200 px-4 py-3 pt-8 w-full dark:bg-[#1e293b] dark:border-slate-700'
     >
       <div className='mb-1'>
-        <h2 className='text-base font-semibold text-slate-800'>{t('document.download_form.title')}</h2>
+        <h2 className='text-base font-semibold text-slate-800 dark:text-white'>{t('document.download_form.title')}</h2>
       </div>
-      <div className='mb-2 text-sm text-slate-700 w-full max-w-xs flex flex-col gap-1'>
+      <div className='mb-2 text-sm text-slate-700 w-full max-w-xs flex flex-col gap-1 dark:text-slate-300'>
         <span>{t('document.download_form.p1')}</span>
-        <span className='text-slate-500'>{t('document.download_form.p2')}</span>
-        <span className='text-orange-600'>{t('document.download_form.p3')}</span>
+        <span className='text-slate-500 dark:text-slate-400'>{t('document.download_form.p2')}</span>
+        <span className='text-orange-600 dark:text-red-400'>{t('document.download_form.p3')}</span>
       </div>
       <div className="relative w-full">
         <Input
@@ -55,7 +89,7 @@ export default function DownloadFileForm({ document, pagesInDocument, thumbnails
           placeholder={t('document.download_form.password')}
           value={password}
           onChange={e => setPassword(e.target.value)}
-          className='pr-10'
+          className='pr-10 focus-visible:ring-0'
         />
         <button
           type="button"
@@ -73,7 +107,7 @@ export default function DownloadFileForm({ document, pagesInDocument, thumbnails
           value={confirmPassword}
           disabled={password.length <= 0}
           onChange={e => setConfirmPassword(e.target.value)}
-          className='pr-10'
+          className='pr-10 focus-visible:ring-0'
         />
         <button
           type="button"
@@ -89,12 +123,8 @@ export default function DownloadFileForm({ document, pagesInDocument, thumbnails
         <Button
           className='bg-white hover:bg-slate-100 transition-all duration-300 cursor-pointer'
           type='button'
-          variant='outline'
-          onClick={() => {
-            setPassword('')
-            setConfirmPassword('')
-            setIsDownloadFormOpen(false)
-          }}
+          variant='destructive'
+          onClick={handleReset}
         >
           <BanIcon/>
           <span>{t('document.download_form.cancel')}</span>
@@ -103,11 +133,7 @@ export default function DownloadFileForm({ document, pagesInDocument, thumbnails
           variant='default'
           className='bg-slate-700 hover:bg-slate-800 transition-all duration-300 cursor-pointer'
           disabled={!isDownloadEnabled}
-          onClick={() => {
-            if (isDownloadEnabled) {
-              handleDownloadDocument(document, pagesInDocument, thumbnailsLookup, documents, password)
-            }
-          }}
+          onClick={handleDownload}
         >
           <DownloadIcon/>
           <span>{t('document.download_form.download')}</span>
