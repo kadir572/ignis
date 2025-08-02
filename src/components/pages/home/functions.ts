@@ -13,7 +13,7 @@ export async function handleFileUpload(isProcessing: boolean, incrementProcessed
       filters: [
         {
           name: 'File Types',
-          extensions: ['pdf', 'txt', 'png', 'jpg']
+          extensions: ['pdf', 'txt', 'md', 'png', 'jpg', 'jpeg', 'webp']
         }
       ]
     })

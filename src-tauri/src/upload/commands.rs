@@ -262,7 +262,7 @@ pub async fn generate_thumbnails(
 
     let pdfium = init_pdfium(&app)?;
 
-    if file_ext == "txt" {
+    if file_ext == "txt" || file_ext == "md" {
         // For text files, first convert to PDF
 
         let temp_pdf_path = get_temp_pdf_path(file_path);
@@ -304,7 +304,7 @@ pub async fn generate_thumbnails(
             thumbnails,
             error: None,
         })
-    } else if file_ext == "png" || file_ext == "jpg" {
+    } else if file_ext == "png" || file_ext == "jpg" || file_ext == "jpeg" || file_ext == "webp" {
         // Create a temporary PDF file for the image
         let temp_pdf_path = get_temp_pdf_path(&document_id);
         convert_image_to_pdf(&app, file_path, &temp_pdf_path)?;
@@ -431,7 +431,7 @@ pub async fn gen_full_res(
     let file_ext = get_file_ext(file_path)?;
     let pdfium = init_pdfium(&app)?;
 
-    if file_ext == "txt" {
+    if file_ext == "txt" || file_ext == "md" {
         // Check if we have a temporary PDF file
         let temp_pdf_path = get_temp_pdf_path(file_path);
         if !temp_pdf_path.exists() {
@@ -458,7 +458,7 @@ pub async fn gen_full_res(
             width: bitmap.width() as u32,
             height: bitmap.height() as u32,
         })
-    } else if file_ext == "png" || file_ext == "jpg" {
+    } else if file_ext == "png" || file_ext == "jpg" || file_ext == "jpeg" || file_ext == "webp" {
         let image = image::open(file_path).map_err(|e| format!("Failed to open image: {}", e))?;
         let mut buffer = Vec::new();
 
