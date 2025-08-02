@@ -13,7 +13,6 @@ import { documentRequiresDecryption } from '@/functions/document'
 import DownloadButton from './download-button'
 import DownloadAllForm from './download-all-form'
 import ResetButton from './ResetButton'
-import { Button } from '@/components/ui/button'
 
 export default function DocumentsList() {
   const { isFormOpen } = useDownloadAllStore()
@@ -170,9 +169,6 @@ export default function DocumentsList() {
           )
         })}
         </div>
-        <Button onClick={() => console.log({ documents, items, thumbnailsLookup })}>
-          log state
-        </Button>
       </div>
     </DragDropProvider>
   )
