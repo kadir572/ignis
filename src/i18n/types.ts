@@ -23,6 +23,7 @@ export type TranslationsType = {
       p1: string,
       p2: string,
       p3: string,
+      warning: string,
       file_name: string,
       password: string,
       confirm_password: string,
@@ -54,6 +55,7 @@ export type TranslationsType = {
       p1: string,
       p2: string,
       p3: string,
+      warning: string,
     },
     decryption: {
       title: string,

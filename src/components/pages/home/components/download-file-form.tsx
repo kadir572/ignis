@@ -59,6 +59,7 @@ export default function DownloadFileForm({ doc, pagesInDocument, thumbnailsLooku
     setPassword('')
     setConfirmPassword('')
     setIsDownloadFormOpen(false)
+    setEncryptionLevel('Aes128')
   }
 
   const handleDownload = async () => {
@@ -168,9 +169,7 @@ export default function DownloadFileForm({ doc, pagesInDocument, thumbnailsLooku
         </ToggleGroup>
         {encryptionLevel === 'Aes256' && (
           <span className="block w-full max-w-xs text-sm text-red-600 dark:text-red-400 font-medium mt-1">
-            {t('document.download_form.aes256_warning', {
-              defaultValue: 'Warning: AES-256 (PDF 1.7) files aren’t supported by this app or many readers. Use AES-128 (PDF 1.5) for compatibility.'
-            })}
+              {t('document.download_form.warning')}
           </span>
         )}
       </div>
