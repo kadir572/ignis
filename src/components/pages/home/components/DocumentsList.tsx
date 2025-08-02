@@ -12,6 +12,8 @@ import { documentRequiresDecryption } from '@/functions/document'
 
 import DownloadButton from './download-button'
 import DownloadAllForm from './download-all-form'
+import ResetButton from './ResetButton'
+import { Button } from '@/components/ui/button'
 
 export default function DocumentsList() {
   const { isFormOpen } = useDownloadAllStore()
@@ -129,9 +131,10 @@ export default function DocumentsList() {
   return (
     <DragDropProvider onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
       <div className='flex flex-col gap-8 w-full relative pb-18'>
-        <div className='flex absolute right-0 top-0 z-30 w-min'>
+        <div className='flex absolute right-0 top-0 z-110 w-min'>
           <div className='flex flex-col w-fit'>
             <div className='flex items-center gap-2'>
+              <ResetButton />
               <DownloadButton className="
   bg-white text-slate-800 border-slate-300
   dark:bg-[#334155] dark:text-white dark:border-slate-500
@@ -167,6 +170,9 @@ export default function DocumentsList() {
           )
         })}
         </div>
+        <Button onClick={() => console.log({ documents, items, thumbnailsLookup })}>
+          log state
+        </Button>
       </div>
     </DragDropProvider>
   )

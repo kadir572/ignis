@@ -49,6 +49,7 @@ export type DocumentsState = {
   addDocument: (document: DocumentData) => void
   removeDocument: (documentId: string) => void
   removeThumbnail: (documentId: string, thumbnailId: string) => void
+  duplicateThumbnail: (documentId: string, thumbnailId: string) => void
   clearDocuments: () => void
   updateFileName: (documentId: string, fileName: string) => void
 }
@@ -64,3 +65,5 @@ export type DownloadResponse = {
   file_name: string,
   file_path: string
 }
+
+export type EncryptionLevel = 'Aes128' | 'Aes256'

@@ -45,3 +45,9 @@ pub struct CommandErrRes {
     pub file_path: Option<String>,
     pub page_index: Option<usize>
 }
+
+#[derive(serde::Deserialize, PartialEq)]
+pub enum EncryptionLevel {
+    Aes128,
+    Aes256,
+}

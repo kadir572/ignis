@@ -24,13 +24,16 @@
       "file_name": "Dateiname",
       "password": "Passwort (optional)",
       "confirm_password": "Passwort bestätigen",
+      "encryption_level": "Verschlüsselungsstufe",
       "cancel": "Abbrechen",
       "download": "Herunterladen",
       "messages": {
         "download_success": "Download erfolgreich. Datei gespeichert unter: {{filePath}}",
         "download_error": "Download fehlgeschlagen. Bitte versuche es erneut."
       }
-    }
+    },
+    "loading_files": "Dateien werden geladen...",
+    "reset_btn": "Zurücksetzen"
   },
   "document": {
     "expand_btn": "Ausklappen",
@@ -46,8 +49,15 @@
       "p3": "Hinweis: PDF-Funktionen wie Links oder interaktive Elemente werden nicht beibehalten, da die Datei als neues PDF gespeichert wird.",
       "password": "Passwort",
       "confirm_password": "Passwort bestätigen",
+      "encryption_level": "Verschlüsselungsstufe",
       "cancel": "Abbrechen",
       "download": "Herunterladen"
+    },
+    "decryption": {
+      "title": "Entschlüsselung erforderlich",
+      "description": "Diese PDF-Datei ist verschlüsselt. Bitte gib das Passwort ein, um sie zu öffnen.",
+      "note": "Hinweis: Diese App kann keine AES-256 verschlüsselten Dateien öffnen.",
+      "enter_password": "Passwort eingeben"
     }
   }
 }

@@ -61,5 +61,17 @@ export const usePdfPreviewsStore = create<DocumentsState>(set => ({
     return {
       documents: {...state.documents, [documentId]: {...state.documents[documentId], file_name: fileName}}
     }
+  }),
+  duplicateThumbnail: (documentId, thumbnailId) => set((state) => {
+    if (!state.documents[documentId]) return state
+    const thumbnail = state.documents[documentId].thumbnails.find(thumbnail => thumbnail.id === thumbnailId)
+    if (!thumbnail) return state
+    const newThumbnail = {
+      ...thumbnail,
+      id: `${documentId}_${crypto.randomUUID()}`
+    }
+    return {
+      documents: { ...state.documents, [documentId]: { ...state.documents[documentId], thumbnails: [...state.documents[documentId].thumbnails, newThumbnail] } }
+    }
   })
 }))

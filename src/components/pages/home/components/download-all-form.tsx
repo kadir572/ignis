@@ -3,10 +3,12 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { useDownloadAllStore } from '@/lib/stores/file-upload.store'
 import { Eye, EyeOff, BanIcon, DownloadIcon } from 'lucide-react'
-import { DocumentData, ThumbnailData } from '@/lib/types/file-upload.types'
+import { DocumentData, EncryptionLevel, ThumbnailData } from '@/lib/types/file-upload.types'
 import { handleDownloadAllDocuments } from '@/functions/document'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { Label } from '@/components/ui/label'
 
 type Props = {
   items: Record<string, string[]>
@@ -23,6 +25,7 @@ export default function DownloadAllForm({ items, thumbnailsLookup, documents }: 
   const { setIsFormOpen, isFormOpen, setIsDownloading, isDownloading } = useDownloadAllStore()
   const inputRef = useRef<HTMLInputElement>(null)
   const formRef = useRef<HTMLDivElement>(null)
+  const [encryptionLevel, setEncryptionLevel] = useState<EncryptionLevel>('Aes128');
   const { t } = useTranslation()
 
   useLayoutEffect(() => {
@@ -64,7 +67,7 @@ export default function DownloadAllForm({ items, thumbnailsLookup, documents }: 
     if (isDownloadEnabled) {
      try {
       setIsDownloading(true)
-      let res = await handleDownloadAllDocuments(fileName, items, thumbnailsLookup, documents, password)
+      let res = await handleDownloadAllDocuments(fileName, items, thumbnailsLookup, documents, password, encryptionLevel)
       toast.success(t('documents.download_all_form.messages.download_success', { filePath: res.file_path }))
       handleReset()
      } catch (error) {
@@ -136,9 +139,60 @@ export default function DownloadAllForm({ items, thumbnailsLookup, documents }: 
           {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
         </button>
       </div>
+      <div className='flex flex-col gap-2 w-full mt-2'>
+        <Label className='text-sm font-medium text-slate-700 dark:text-slate-300'>
+          {t('document.download_form.encryption_level')}
+        </Label>
+        <ToggleGroup
+          type='single'
+          value={encryptionLevel}
+          onValueChange={val => {
+            if (val) setEncryptionLevel(val as EncryptionLevel);
+          }}
+          className='w-full flex gap-2'
+        >
+          <ToggleGroupItem
+            value='Aes128'
+            className={`
+              py-6
+              bg-slate-100 dark:bg-slate-800
+              data-[state=on]:bg-slate-700 data-[state=on]:text-white dark:data-[state=on]:bg-slate-700 dark:data-[state=on]:text-white
+              transition-colors duration-200
+              rounded-md
+            `}
+          >
+            <span>
+              AES-128
+              <span className="block text-xs">PDF 1.5</span>
+            </span>
+          </ToggleGroupItem>
+          <ToggleGroupItem
+            value='Aes256'
+            className={`
+              py-6
+              bg-slate-100 dark:bg-slate-800
+              data-[state=on]:bg-slate-700 data-[state=on]:text-white dark:data-[state=on]:bg-slate-700 dark:data-[state=on]:text-white
+              transition-colors duration-200
+              rounded-md
+            `}
+          >
+            <span>
+              AES-256
+              <span className="block text-xs text-slate-500 dark:text-slate-400">PDF 1.7</span>
+            </span>
+          </ToggleGroupItem>
+        </ToggleGroup>
+        {encryptionLevel === 'Aes256' && (
+          <span className="block w-full max-w-xs text-sm text-red-600 dark:text-red-400 font-medium mt-1">
+            {t('document.download_form.aes256_warning', {
+              defaultValue: 'Warning: AES-256 (PDF 1.7) files aren’t supported by this app or many readers. Use AES-128 (PDF 1.5) for compatibility.'
+            })}
+          </span>
+        )}
+      </div>
       <div className='flex gap-2 justify-end mt-4'>
         <Button
-          className='bg-white hover:bg-slate-100 transition-all duration-300 cursor-pointer'
+          className='transition-all duration-300 cursor-pointer'
           type='button'
           variant='destructive'
           onClick={handleReset}

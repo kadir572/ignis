@@ -1,10 +1,10 @@
-import { DocumentData, DownloadResponse, ThumbnailData } from '@/lib/types/file-upload.types'
+import { DocumentData, DownloadResponse, EncryptionLevel, ThumbnailData } from '@/lib/types/file-upload.types'
 import { CollisionPriority } from '@dnd-kit/abstract'
 import { RestrictToVerticalAxis } from '@dnd-kit/abstract/modifiers'
 import { useSortable } from '@dnd-kit/react/sortable'
 import { invoke } from '@tauri-apps/api/core'
 
-export const handleDownloadDocument = async (document: DocumentData, pagesInDocument: string[], thumbnailsLookup: Record<string, ThumbnailData>, documents: Record<string, DocumentData>, password?: string): Promise<DownloadResponse> => {
+export const handleDownloadDocument = async (document: DocumentData, pagesInDocument: string[], thumbnailsLookup: Record<string, ThumbnailData>, documents: Record<string, DocumentData>, password?: string, encryptionLevel?: EncryptionLevel): Promise<DownloadResponse> => {
   const thumbnails = pagesInDocument.map(thumbnailId => {
     const thumbnail = thumbnailsLookup[thumbnailId]
     if (!thumbnail) return null
@@ -18,12 +18,13 @@ export const handleDownloadDocument = async (document: DocumentData, pagesInDocu
   let res = await invoke('download_file', {
     fileName: document.file_name,
     thumbnails,
-    password
+    password,
+    encryptionLevel
   })
   return res as DownloadResponse
 }
 
-export const handleDownloadAllDocuments = async (fileName: string, pagesInDocuments: Record<string, string[]>, thumbnailsLookup: Record<string, ThumbnailData>, documents: Record<string, DocumentData>, password?: string): Promise<DownloadResponse> => {
+export const handleDownloadAllDocuments = async (fileName: string, pagesInDocuments: Record<string, string[]>, thumbnailsLookup: Record<string, ThumbnailData>, documents: Record<string, DocumentData>, password?: string, encryptionLevel?: EncryptionLevel): Promise<DownloadResponse> => {
   // Flatten all pages in all documents, preserving order
   const thumbnails = Object.values(pagesInDocuments).flatMap(pagesInDocument =>
     pagesInDocument.map(thumbnailId => {
@@ -40,7 +41,8 @@ export const handleDownloadAllDocuments = async (fileName: string, pagesInDocume
   let res = await invoke('download_file', {
     fileName,
     thumbnails,
-    password
+    password,
+    encryptionLevel
   })
 
   return res as DownloadResponse

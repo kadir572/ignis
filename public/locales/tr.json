@@ -24,13 +24,16 @@
       "file_name": "Dosya Adı",
       "password": "Parola (isteğe bağlı)",
       "confirm_password": "Parolayı Onayla",
+      "encryption_level": "Şifreleme Düzeyi",
       "cancel": "İptal",
       "download": "İndir",
       "messages": {
         "download_success": "İndirme başarılı. Dosya kaydedildi: {{filePath}}",
         "download_error": "İndirme başarısız oldu. Lütfen tekrar deneyin."
       }
-    }
+    },
+    "loading_files": "Dosyalar yükleniyor...",
+    "reset_btn": "Sıfırla"
   },
   "document": {
     "expand_btn": "Genişlet",
@@ -46,8 +49,15 @@
       "p3": "Not: Bağlantılar veya etkileşimli öğeler gibi PDF özellikleri korunmayacaktır, çünkü dosya yeni bir PDF olarak kaydedilecektir.",
       "password": "Parola",
       "confirm_password": "Parolayı Onayla",
+      "encryption_level": "Şifreleme Düzeyi",
       "cancel": "İptal",
       "download": "İndir"
+    },
+    "decryption": {
+      "title": "Şifreleme Gerekiyor",
+      "description": "Bu PDF dosyası şifrelenmiştir. Lütfen parolayı giriniz.",
+      "note": "Not: Bu uygulama AES-256 şifrelenmiş dosyaları açamaz.",
+      "enter_password": "Parolayı Giriniz"
     }
   }
 } 

@@ -132,7 +132,7 @@ export default function Document({
     <div
       className={`${
         sortable.isDragging ? 'opacity-40' : ''
-      } ${isDownloadFormOpen ? 'z-50' : ''} flex flex-col gap-2 w-full transition-all duration-300 pt-2 max-w-full`}
+      } ${isDownloadFormOpen ? 'z-100' : ''} flex flex-col gap-2 w-full transition-all duration-300 pt-2 max-w-full`}
       ref={sortable.ref}
       data-dragging={sortable.isDragging}
     >
@@ -176,21 +176,23 @@ export default function Document({
           {!isEditing && (
             <div className='px-4 relative'>
               <div className='absolute -top-2 -right-2'>
-                <Pen
-                  className={`w-4 h-4 ${requiresDecryption ? 'opacity-50 cursor-default' : 'cursor-pointer'}`}
-                  onClick={() => {
-                    if (requiresDecryption) return
-                    setIsEditing(true)
-                  }}
-                />
+               {!requiresDecryption && (
+                 <Pen
+                 className={`w-4 h-4 ${requiresDecryption ? 'opacity-50 cursor-default' : 'cursor-pointer'}`}
+                 onClick={() => {
+                   if (requiresDecryption) return
+                   setIsEditing(true)
+                 }}
+               />
+               )}
               </div>
               <span className='text-lg font-bold'>{baseName + extension}</span>
             </div>
           )}
         </div>
-        {!requiresDecryption && (
-          <div className="flex items-center gap-2 w-fit ml-12 relative z-10">
-            <Button
+        <div className="flex items-center gap-2 w-fit ml-12 relative z-10">
+            {!requiresDecryption && (
+              <Button
               variant='outline'
               className="
                 w-fit cursor-pointer flex items-center gap-2 transition-all duration-300
@@ -204,6 +206,7 @@ export default function Document({
               {isExpanded ? <FoldVerticalIcon/> : <UnfoldVerticalIcon/> }
               <span>{isExpanded ? t('document.collapse_btn') : t('document.expand_btn')}</span>
             </Button>
+            )}
             <Button
               onClick={() => removeDocument(document.id)}
               variant='destructive'
@@ -212,7 +215,9 @@ export default function Document({
               <Trash2Icon />
               <span>{t('document.remove_btn')}</span>
             </Button>
-            <Button
+           {!requiresDecryption && (
+            <>
+             <Button
               disabled={isDownloading || isDownloadFormOpen}
               variant="outline"
               className={`
@@ -273,9 +278,9 @@ export default function Document({
               <div className='min-h-0 overflow-hidden'>
                 <DownloadFileForm  doc={document} pagesInDocument={pagesInDocument} thumbnailsLookup={thumbnailsLookup} documents={documents} isDownloadFormOpen={isDownloadFormOpen} setIsDownloadFormOpen={setIsDownloadFormOpen} />
               </div>
-            </div>
+            </div></>
+           )}
           </div>
-        )}
       </div>
       <div
         className='relative w-full'
@@ -292,13 +297,16 @@ export default function Document({
 `}
         >
           {requiresDecryption && (
-            <div className="flex flex-col justify-center gap-4 bg-white/80 rounded-lg shadow-md p-6 min-w-[260px] min-h-[140px] border border-blue-200">
-              <h2 className="text-lg font-semibold text-blue-700 flex items-center gap-2">
+            <div className="flex flex-col justify-center gap-4 bg-white/80 rounded-lg shadow-md p-6 min-w-[260px] min-h-[140px] border border-blue-200 dark:bg-slate-800 dark:border-slate-700">
+              <h2 className="text-lg font-semibold text-blue-700 flex items-center gap-2 dark:text-slate-300">
                 <LockIcon className="w-5 h-5" />
-                Password Required
+                {t('document.decryption.title')}
               </h2>
-              <span className="text-gray-600 text-sm">
-                This PDF document is encrypted.<br />Please enter the password to view it.
+              <span className="text-gray-600 text-sm dark:text-slate-300">
+                {t('document.decryption.description')}
+              </span>
+              <span className="block w-full max-w-xs text-sm text-red-600 dark:text-red-400 font-medium">
+                {t('document.decryption.note')}
               </span>
               <form
                 className="flex flex-col gap-2"
@@ -312,8 +320,8 @@ export default function Document({
                   <div className="relative w-full max-w-xs">
                     <Input
                       type={showPassword ? "text" : "password"}
-                      placeholder="Enter password"
-                      className="w-full bg-slate-100 border border-blue-200 rounded-md pr-10"
+                      placeholder={t('document.decryption.enter_password')}
+                      className="w-full bg-slate-100 border border-blue-200 rounded-md pr-10 dark:bg-slate-800 dark:border-slate-700"
                       value={password}
                       onChange={e => setPassword(e.target.value)}
                     />

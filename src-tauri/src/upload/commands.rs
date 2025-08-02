@@ -2,12 +2,12 @@ use lopdf::{Dictionary, Document, EncryptionState, EncryptionVersion, Object, Ob
 use pdfium_render::prelude::*;
 use std::collections::BTreeMap;
 use std::{fs, io::Cursor, path::Path};
-use tauri::{AppHandle, Emitter};
+use tauri::{AppHandle};
 use uuid::Uuid;
 
 use crate::upload::enums::ImageQuality;
 use crate::upload::functions::{file_name_from_path, gen_data_url_from_buffer};
-use crate::upload::structs::{CommandErrRes, DownloadSuccessRes};
+use crate::upload::structs::{CommandErrRes, DownloadSuccessRes, EncryptionLevel};
 use crate::upload::{
     functions::{
         clone_with_dependencies, convert_image_to_pdf, convert_text_to_pdf, gen_image_bitmap,
@@ -25,24 +25,34 @@ pub async fn download_file(
     file_name: &str,
     thumbnails: Vec<ThumbnailDownloadData>,
     password: Option<String>,
+    encryption_level: Option<EncryptionLevel>,
 ) -> Result<DownloadSuccessRes, CommandErrRes> {
 
-    let output_path = get_output_path(&app, file_name).map_err(|e| CommandErrRes {
+    let output_path = get_output_path(&app, file_name).map_err(|_| CommandErrRes {
         key: "PDF_OUTPUT_PATH_ERROR".to_string(),
         file_name: file_name.to_string(),
         file_path: None,
         page_index: None,
     })?;
 
-    // Original PDF handling code
-    // Use PDF 1.5 for AES-128 encryption compatibility
-    let mut new_doc = Document::with_version("1.5");
+    // Determine PDF version based on password and encryption_level
+    let pdf_version = if password.is_none() {
+        "1.5"
+    } else {
+        let enc_level = encryption_level.as_ref().unwrap_or(&EncryptionLevel::Aes128);
+        match enc_level {
+            EncryptionLevel::Aes128 => "1.5",
+            EncryptionLevel::Aes256 => "1.7",
+        }
+    };
+
+    let mut new_doc = Document::with_version(pdf_version);
     let mut new_pages = Vec::new();
     let mut global_id_map: BTreeMap<String, BTreeMap<ObjectId, ObjectId>> = BTreeMap::new();
 
     for thumb in &thumbnails {
         let mut doc = lopdf::Document::load(&thumb.file_path)
-            .map_err(|e| CommandErrRes {
+            .map_err(|_| CommandErrRes {
                 key: "PDF_PAGE_LOAD_ERROR".to_string(),
                 file_name: file_name.to_string(),
                 file_path: Some(thumb.file_path.clone()),
@@ -115,46 +125,96 @@ pub async fn download_file(
         new_doc.trailer.set("ID", id_obj);
     }
 
-    // Only encrypt if there are pages (avoid encrypting an empty doc)
     if let Some(password) = password {
         if !new_pages.is_empty() {
             let owner_password = &password;
             let user_password = &password;
             let permissions = Permissions::default();
 
-            // Set up crypt filters for AES-128
-            let mut crypt_filters: BTreeMap<Vec<u8>, Arc<dyn lopdf::encryption::crypt_filters::CryptFilter>> = BTreeMap::new();
-            crypt_filters.insert(b"Default".to_vec(), Arc::new(lopdf::encryption::crypt_filters::Aes128CryptFilter));
+            let enc_level = encryption_level.unwrap_or(EncryptionLevel::Aes128);
 
+            let mut crypt_filters: BTreeMap<Vec<u8>, Arc<dyn lopdf::encryption::crypt_filters::CryptFilter>> = BTreeMap::new();
             let stream_filter = b"Default".to_vec();
             let string_filter = b"Default".to_vec();
 
-            let version = EncryptionVersion::V4 {
-                document: &new_doc,
-                encrypt_metadata: true,
-                crypt_filters,
-                stream_filter,
-                string_filter,
-                owner_password,
-                user_password,
-                permissions,
-            };
+            if enc_level == EncryptionLevel::Aes128 {
+                // Use V4 encryption with AES-128 for PDF version 1.5
+                crypt_filters.insert(b"Default".to_vec(), Arc::new(lopdf::encryption::crypt_filters::Aes128CryptFilter));
+                let version = EncryptionVersion::V4 {
+                    document: &new_doc,
+                    encrypt_metadata: true,
+                    crypt_filters,
+                    stream_filter,
+                    string_filter,
+                    owner_password,
+                    user_password,
+                    permissions,
+                };
 
-            let state = EncryptionState::try_from(version)
-                .map_err(|_| CommandErrRes {
-                    key: "PDF_ENCRYPT_ERROR".to_string(),
-                    file_name: file_name.to_string(),
-                    file_path: Some(output_path.to_string_lossy().to_string()),
-                    page_index: None,
-                })?;
+                let state = EncryptionState::try_from(version)
+                    .map_err(|e| {
+                        println!("EncryptionState::try_from error (AES-128): {e:?}");
+                        CommandErrRes {
+                            key: "PDF_ENCRYPT_ERROR".to_string(),
+                            file_name: file_name.to_string(),
+                            file_path: Some(output_path.to_string_lossy().to_string()),
+                            page_index: None,
+                        }
+                    })?;
 
-            new_doc.encrypt(&state)
-                .map_err(|_| CommandErrRes {
-                    key: "PDF_ENCRYPT_ERROR".to_string(),
-                    file_name: file_name.to_string(),
-                    file_path: Some(output_path.to_string_lossy().to_string()),
-                    page_index: None,
-                })?;
+                new_doc.encrypt(&state)
+                    .map_err(|e| {
+                        println!("new_doc.encrypt error (AES-128): {e:?}");
+                        CommandErrRes {
+                            key: "PDF_ENCRYPT_ERROR".to_string(),
+                            file_name: file_name.to_string(),
+                            file_path: Some(output_path.to_string_lossy().to_string()),
+                            page_index: None,
+                        }
+                    })?;
+            } else {
+                // For AES-256, generate a 32-byte key and use V5 encryption (which requires PDF version 1.7)
+                use lopdf::encryption::crypt_filters::Aes256CryptFilter;
+                use rand::Rng;
+
+                let mut file_encryption_key = [0u8; 32];
+                rand::thread_rng().fill(&mut file_encryption_key);
+
+                crypt_filters.insert(b"Default".to_vec(), Arc::new(Aes256CryptFilter));
+
+                let version = EncryptionVersion::V5 {
+                    encrypt_metadata: true,
+                    crypt_filters,
+                    file_encryption_key: &file_encryption_key,
+                    stream_filter,
+                    string_filter,
+                    owner_password,
+                    user_password,
+                    permissions,
+                };
+
+                let state = EncryptionState::try_from(version)
+                    .map_err(|e| {
+                        println!("EncryptionState::try_from error (AES-256): {e:?}");
+                        CommandErrRes {
+                            key: "PDF_ENCRYPT_ERROR".to_string(),
+                            file_name: file_name.to_string(),
+                            file_path: Some(output_path.to_string_lossy().to_string()),
+                            page_index: None,
+                        }
+                    })?;
+
+                new_doc.encrypt(&state)
+                    .map_err(|e| {
+                        println!("new_doc.encrypt error (AES-256): {e:?}");
+                        CommandErrRes {
+                            key: "PDF_ENCRYPT_ERROR".to_string(),
+                            file_name: file_name.to_string(),
+                            file_path: Some(output_path.to_string_lossy().to_string()),
+                            page_index: None,
+                        }
+                    })?;
+            }
         }
     }
 
@@ -187,9 +247,6 @@ pub async fn generate_thumbnails(
 
     let file_name = file_name_from_path(file_path);
 
-    // Emit start event
-    // app.emit("thumbnail-generation-started", file_path).ok();
-
     let mut thumbnails = Vec::new();
 
     // User error: file not found
@@ -220,15 +277,7 @@ pub async fn generate_thumbnails(
             .load_pdf_from_file(temp_pdf_path.to_str().unwrap(), None)
             .map_err(|_| format!("PDF_LOAD_ERROR"))?;
 
-        // For each page
         for (page_index, page) in document.pages().iter().enumerate() {
-            // Emit progress event
-            // app.emit(
-            //     "thumbnail-generation-progress",
-            //     (file_path, page_index, document.pages().len()),
-            // )
-            // .ok();
-
             let aspect_ratio = page.width().value / page.height().value;
 
             let target_height: f32 = 250.0;
@@ -264,15 +313,7 @@ pub async fn generate_thumbnails(
             .load_pdf_from_file(temp_pdf_path.to_str().unwrap(), None)
             .map_err(|_| format!("PDF_LOAD_ERROR"))?;
 
-        // For each page (should be just one)
         for (page_index, page) in document.pages().iter().enumerate() {
-            // Emit progress event
-            // app.emit(
-            //     "thumbnail-generation-progress",
-            //     (file_path, page_index, document.pages().len()),
-            // )
-            // .ok();
-
             let aspect_ratio = page.width().value / page.height().value;
 
             // Calculate target width based on max height and aspect ratio
@@ -301,7 +342,6 @@ pub async fn generate_thumbnails(
             error: None,
         })
     } else {
-        // User error: password required/incorrect
         let document: Result<PdfDocument, DocumentData> = match &password {
             Some(pw) => match pdfium.load_pdf_from_file(file_path, Some(pw)) {
                 Ok(doc) => Ok(doc),
@@ -339,21 +379,12 @@ pub async fn generate_thumbnails(
             },
         };
 
-        // Now handle the result:
         let document = match document {
             Ok(doc) => doc,
             Err(doc_data) => return Ok(doc_data),
         };
 
-        // For each page
         for (page_index, page) in document.pages().iter().enumerate() {
-            // Emit progress event
-            // app.emit(
-            //     "thumbnail-generation-progress",
-            //     (file_path, page_index, document.pages().len()),
-            // )
-            // .ok();
-
             let aspect_ratio = page.width().value / page.height().value;
 
             let target_height: f32 = 250.0;
@@ -379,9 +410,6 @@ pub async fn generate_thumbnails(
                 height: bitmap.height() as u32,
             });
         }
-
-        // Emit completion event
-        // app.emit("thumbnail-generation-completed", file_path).ok();
 
         Ok(DocumentData {
             id: document_id,

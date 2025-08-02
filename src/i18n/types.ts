@@ -26,13 +26,16 @@ export type TranslationsType = {
       file_name: string,
       password: string,
       confirm_password: string,
+      encryption_level: string,
       cancel: string,
       download: string,
       messages: {
         download_success: string
         download_error: string
       }
-    }
+    },
+    loading_files: string,
+    reset_btn: string,
   },
   document: {
     expand_btn: string,
@@ -44,12 +47,19 @@ export type TranslationsType = {
     download_form: {
       password: string,
       confirm_password: string,
+      encryption_level: string,
       cancel: string,
       download: string,
       title: string,
       p1: string,
       p2: string,
       p3: string,
+    },
+    decryption: {
+      title: string,
+      description: string,
+      note: string,
+      enter_password: string,
     }
   }
 }

@@ -24,13 +24,16 @@
       "file_name": "Nazwa pliku",
       "password": "Hasło (opcjonalnie)",
       "confirm_password": "Potwierdź hasło",
+      "encryption_level": "Poziom szyfrowania",
       "cancel": "Anuluj",
       "download": "Pobierz",
       "messages": {
         "download_success": "Pobieranie zakończone sukcesem. Plik zapisano w: {{filePath}}",
         "download_error": "Pobieranie nie powiodło się. Spróbuj ponownie."
       }
-    }
+    },
+    "loading_files": "Ładowanie plików...",
+    "reset_btn": "Zresetuj"
   },
   "document": {
     "expand_btn": "Rozwiń",
@@ -46,8 +49,15 @@
       "p3": "Uwaga: Funkcje PDF, takie jak linki lub elementy interaktywne, nie zostaną zachowane, ponieważ plik zostanie zapisany jako nowy PDF.",
       "password": "Hasło",
       "confirm_password": "Potwierdź hasło",
+      "encryption_level": "Poziom szyfrowania",
       "cancel": "Anuluj",
       "download": "Pobierz"
+    },
+    "decryption": {
+      "title": "Wymagane szyfrowanie",
+      "description": "Ten plik PDF jest zaszyfrowany. Proszę wprowadzić hasło, aby go otworzyć.",
+      "note": "Uwaga: Ta aplikacja nie może otwierać zaszyfrowanych plików AES-256.",
+      "enter_password": "Wprowadź hasło"
     }
   }
 } 
