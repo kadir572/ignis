@@ -146,7 +146,7 @@ export default function DownloadAllForm({ items, thumbnailsLookup, documents }: 
         <ToggleGroup
           type='single'
           value={encryptionLevel}
-          onValueChange={val => {
+          onValueChange={(val: string) => {
             if (val) setEncryptionLevel(val as EncryptionLevel);
           }}
           className='w-full flex gap-2'

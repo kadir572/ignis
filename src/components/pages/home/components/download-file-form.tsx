@@ -130,7 +130,7 @@ export default function DownloadFileForm({ doc, pagesInDocument, thumbnailsLooku
         <ToggleGroup
           type='single'
           value={encryptionLevel}
-          onValueChange={val => {
+          onValueChange={(val: string) => {
             if (val) setEncryptionLevel(val as EncryptionLevel);
           }}
           className='w-full flex gap-2'
