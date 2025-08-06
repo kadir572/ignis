@@ -2,7 +2,12 @@
   "landing": {
     "title": "Ignis'e Hoş Geldiniz!",
     "subtitle": "Başlamak için dosyalarınızı yükleyin",
-    "upload_btn": "Dosya Yükle"
+    "upload_btn": "Dosya Yükle",
+    "supported_files": {
+      "title": "Desteklenen Dosya Türleri",
+      "description": "Çeşitli dosya formatlarını yükleyin ve tek bir PDF'de birleştirin",
+      "formats": "PDF, TXT, MD, PNG, JPG, JPEG, WEBP"
+    }
   },
   "settings": {
     "language": {

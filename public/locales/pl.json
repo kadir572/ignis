@@ -2,7 +2,12 @@
   "landing": {
     "title": "Witamy w Ignis!",
     "subtitle": "Prześlij swoje pliki, aby rozpocząć",
-    "upload_btn": "Prześlij pliki"
+    "upload_btn": "Prześlij pliki",
+    "supported_files": {
+      "title": "Obsługiwane typy plików",
+      "description": "Prześlij i połącz różne formaty plików w jeden PDF",
+      "formats": "PDF, TXT, MD, PNG, JPG, JPEG, WEBP"
+    }
   },
   "settings": {
     "language": {

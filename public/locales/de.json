@@ -2,7 +2,12 @@
   "landing": {
     "title": "Willkommen bei Ignis!",
     "subtitle": "Lade deine Dateien hoch, um zu beginnen",
-    "upload_btn": "Dateien hochladen"
+    "upload_btn": "Dateien hochladen",
+    "supported_files": {
+      "title": "Unterstützte Dateitypen",
+      "description": "Lade verschiedene Dateiformate hoch und führe sie zu einem PDF zusammen",
+      "formats": "PDF, TXT, MD, PNG, JPG, JPEG, WEBP"
+    }
   },
   "settings": {
     "language": {

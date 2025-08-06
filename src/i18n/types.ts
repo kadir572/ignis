@@ -5,6 +5,11 @@ export type TranslationsType = {
     title: string
     subtitle: string
     upload_btn: string
+    supported_files: {
+      title: string
+      description: string
+      formats: string
+    }
   }
   settings: {
     language: {
